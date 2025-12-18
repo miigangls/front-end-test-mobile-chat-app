@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { Chat } from '@/hooks/useChats';
 import { Avatar } from './Avatar';
 import { ThemedText } from './ThemedText';
 import { User } from '@/hooks/useUser';
+import { buildChatTitle, getOtherParticipants } from '@/utils/chat';
+import { formatRelativeChatTime } from '@/utils/datetime';
+import { useAppColors } from '@/hooks/useAppColors';
 
 interface ChatListItemProps {
   chat: Chat;
@@ -13,51 +16,32 @@ interface ChatListItemProps {
 }
 
 export function ChatListItem({ chat, currentUserId, users }: ChatListItemProps) {
-  const navigation = useNavigation();
+  const router = useRouter();
+  const colors = useAppColors();
   
   const otherParticipants = useMemo(() => {
-    return chat.participants
-      .filter(id => id !== currentUserId)
-      .map(id => users.find(user => user.id === id))
-      .filter(Boolean) as User[];
+    const usersById = new Map(users.map((u) => [u.id, u]));
+    return getOtherParticipants(chat.participants, currentUserId, usersById);
   }, [chat.participants, currentUserId, users]);
 
   const chatName = useMemo(() => {
-    if (otherParticipants.length === 0) {
-      return 'No participants';
-    } else if (otherParticipants.length === 1) {
-      return otherParticipants[0].name;
-    } else {
-      return `${otherParticipants[0].name} & ${otherParticipants.length - 1} other${otherParticipants.length > 2 ? 's' : ''}`;
-    }
+    return buildChatTitle(otherParticipants);
   }, [otherParticipants]);
 
   const handlePress = () => {
-    navigation.navigate('ChatRoom' as never, { chatId: chat.id } as never);
+    router.push({ pathname: '/ChatRoom', params: { chatId: chat.id } });
   };
 
   const timeString = useMemo(() => {
     if (!chat.lastMessage) return '';
-    
-    const date = new Date(chat.lastMessage.timestamp);
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffInDays === 1) {
-      return 'Yesterday';
-    } else if (diffInDays < 7) {
-      return date.toLocaleDateString([], { weekday: 'short' });
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    }
+
+    return formatRelativeChatTime(chat.lastMessage.timestamp);
   }, [chat.lastMessage]);
 
   const isCurrentUserLastSender = chat.lastMessage?.senderId === currentUserId;
 
   return (
-    <Pressable style={styles.container} onPress={handlePress}>
+    <Pressable style={[styles.container, { borderBottomColor: colors.border }]} onPress={handlePress}>
       <Avatar 
         user={otherParticipants[0]} 
         size={50}
@@ -68,7 +52,7 @@ export function ChatListItem({ chat, currentUserId, users }: ChatListItemProps) 
             {chatName}
           </ThemedText>
           {timeString && (
-            <ThemedText style={styles.time}>{timeString}</ThemedText>
+            <ThemedText style={[styles.time, { color: colors.mutedText }]}>{timeString}</ThemedText>
           )}
         </View>
         <View style={styles.bottomRow}>
@@ -77,6 +61,7 @@ export function ChatListItem({ chat, currentUserId, users }: ChatListItemProps) 
               numberOfLines={1}
               style={[
                 styles.lastMessage,
+                { color: colors.mutedText },
                 isCurrentUserLastSender && styles.currentUserMessage
               ]}
             >
@@ -95,7 +80,6 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E1E1E1',
   },
   contentContainer: {
     flex: 1,
@@ -118,11 +102,9 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: 12,
-    color: '#8F8F8F',
   },
   lastMessage: {
     fontSize: 14,
-    color: '#8F8F8F',
     flex: 1,
   },
   currentUserMessage: {

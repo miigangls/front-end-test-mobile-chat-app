@@ -1,19 +1,2 @@
-import { useChatsDb, Chat, Message } from './db/useChatsDb';
-
-export { Chat, Message };
-
-export function useChats(currentUserId: string | null) {
-  const { 
-    chats, 
-    createChat, 
-    sendMessage, 
-    loading 
-  } = useChatsDb(currentUserId);
-
-  return {
-    chats,
-    createChat,
-    sendMessage,
-    loading,
-  };
-} 
+export type { Chat, Message } from '@/types/chat';
+export { useChats } from '@/hooks/chats/useChats';

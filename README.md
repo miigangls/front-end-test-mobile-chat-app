@@ -37,26 +37,26 @@ Please make sure to **document your task selection, implementation details, and 
 
 ### Code Quality & Architecture
 
-- [ ] Question the implementation of the architecture from the AppContext.ts, hooks, etc. Remember, this architecture was made by the IA with low to none suppervision, so dont extend actual code without thinking about it, instead refactor it to start using better practices for that you see fit. This is possible the most important thing to have in mind and you can implement it gradually (while attacking other tasks but questioning at all time what to refactor and what to extend as is.)
+- [x] Question the implementation of the architecture from the AppContext.ts, hooks, etc. Remember, this architecture was made by the IA with low to none suppervision, so dont extend actual code without thinking about it, instead refactor it to start using better practices for that you see fit. This is possible the most important thing to have in mind and you can implement it gradually (while attacking other tasks but questioning at all time what to refactor and what to extend as is.)
 
 ### Performance Improvements (extra points for anything regarding data management improvement since this is a offline first app and its important to use the localDb wisely)
 
-- [ ] Optimize message list rendering with virtualization
-- [ ] Add pagination for loading older messages
-- [ ] Optimize database queries and state management
-- [ ] Implement proper memory management for media content
+- [x] Optimize message list rendering with virtualization
+- [x] Add pagination for loading older messages
+- [x] Optimize database queries and state management
+- [x] Implement proper memory management for media content
 
 ### Feature Additions (rmember, we encourgae you to tackle just some challinging features instead of lots os easy ones, choose the difficult over easy the easy ones also to better showcase your skills)
 
-- [ ] Add media sharing capabilities (photos preferably, with a optimized/compressed preview instead of the original image)
-- [ ] Add read receipts for messages along with status indicators (sent, read)
-- [ ] Add message deletion and editing
-- [ ] Implement message search functionality
+- [x] Add media sharing capabilities (photos preferably, with a optimized/compressed preview instead of the original image)
+- [x] Add read receipts for messages along with status indicators (sent, read)
+- [x] Add message deletion and editing
+- [x] Implement message search functionality
 
 ### Bug Fixes
 
-- [ ] Fix message ordering in chat rooms (newest messages should appear at the bottom, next to the input box)
-- [ ] Resolve keyboard or other components overlap issues on different device sizes
+- [x] Fix message ordering in chat rooms (newest messages should appear at the bottom, next to the input box)
+- [x] Resolve keyboard or other components overlap issues on different device sizes
 
 ## Assessment Criteria
 

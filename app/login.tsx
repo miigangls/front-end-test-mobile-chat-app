@@ -2,17 +2,20 @@ import React from 'react';
 import { StyleSheet, FlatList, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useAppContext } from '@/hooks/AppContext';
+import { useAuth } from '@/hooks/auth/AuthContext';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { UserListItem } from '@/components/UserListItem';
+import { useAppColors } from '@/hooks/useAppColors';
 
 export default function LoginScreen() {
-  const { users, login } = useAppContext();
+  const { users, login } = useAuth();
+  const colors = useAppColors();
   const router = useRouter();
 
-  const handleUserSelect = (userId: string) => {
-    if (login(userId)) {
+  const handleUserSelect = async (userId: string) => {
+    const ok = await login(userId);
+    if (ok) {
       router.replace('/(tabs)');
     }
   };
@@ -23,7 +26,7 @@ export default function LoginScreen() {
       <ThemedView style={styles.container}>
         <ThemedView style={styles.header}>
           <ThemedText type="title">Welcome to Chat App</ThemedText>
-          <ThemedText style={styles.subtitle}>
+          <ThemedText style={[styles.subtitle, { color: colors.mutedText }]}>
             Select a user to continue
           </ThemedText>
         </ThemedView>
@@ -34,7 +37,7 @@ export default function LoginScreen() {
           renderItem={({ item }) => (
             <UserListItem
               user={item}
-              onSelect={() => handleUserSelect(item.id)}
+              onPress={() => handleUserSelect(item.id)}
             />
           )}
           contentContainerStyle={styles.listContainer}
@@ -60,7 +63,6 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 10,
     fontSize: 16,
-    color: '#8F8F8F',
   },
   listContainer: {
     paddingBottom: 20,

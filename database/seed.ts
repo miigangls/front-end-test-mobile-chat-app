@@ -1,7 +1,6 @@
 import { db } from './db';
 import { users, chats, chatParticipants, messages } from './schema';
 
-// Mock user data from the original useUser hook
 const mockUsers = [
   {
     id: '1',
@@ -29,7 +28,6 @@ const mockUsers = [
   },
 ];
 
-// Initial chat data (similar to useChats)
 const initialChats = [
   {
     id: 'chat1',
@@ -63,7 +61,6 @@ const initialChats = [
   },
 ];
 
-// Check if there's any data in the users table
 async function isDataSeeded() {
   try {
     const result = await db.select().from(users);
@@ -76,7 +73,6 @@ async function isDataSeeded() {
 
 export async function seedDatabase() {
   try {
-    // Check if database already has data
     const alreadySeeded = await isDataSeeded();
     if (alreadySeeded) {
       console.log('Database already seeded, skipping...');
@@ -85,19 +81,15 @@ export async function seedDatabase() {
     
     console.log('Seeding database...');
     
-    // Insert users
     console.log('Seeding users...');
     for (const user of mockUsers) {
       await db.insert(users).values(user).onConflictDoNothing();
     }
     
-    // Insert chats and their relationships
     console.log('Seeding chats...');
     for (const chat of initialChats) {
-      // Insert chat
       await db.insert(chats).values({ id: chat.id }).onConflictDoNothing();
       
-      // Insert participants
       console.log(`Adding participants for chat ${chat.id}...`);
       for (const userId of chat.participants) {
         await db.insert(chatParticipants).values({
@@ -107,7 +99,6 @@ export async function seedDatabase() {
         }).onConflictDoNothing();
       }
       
-      // Insert messages
       console.log(`Adding messages for chat ${chat.id}...`);
       for (const message of chat.messages) {
         await db.insert(messages).values({
@@ -116,6 +107,8 @@ export async function seedDatabase() {
           senderId: message.senderId,
           text: message.text,
           timestamp: message.timestamp,
+          type: 'text',
+          status: 'sent',
         }).onConflictDoNothing();
       }
     }

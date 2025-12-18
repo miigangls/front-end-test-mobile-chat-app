@@ -1,8 +1,3 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
@@ -11,6 +6,21 @@ export const Colors = {
     text: '#11181C',
     background: '#fff',
     tint: tintColorLight,
+    primary: '#007AFF',
+    surface: '#F9F9F9',
+    border: '#E1E1E1',
+    mutedText: '#8F8F8F',
+    danger: '#FF3B30',
+    selection: 'rgba(0, 122, 255, 0.1)',
+    disabled: '#CCCCCC',
+    chatBubbleSelf: '#DCF8C6',
+    chatBubbleOther: '#FFFFFF',
+    chatBubbleSelfText: '#000000',
+    avatarStatusOnline: '#4CAF50',
+    avatarStatusOffline: '#9E9E9E',
+    avatarStatusAway: '#FFC107',
+    avatarStatusBorder: '#FFFFFF',
+    avatarPlaceholder: '#C0C0C0',
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
@@ -19,6 +29,21 @@ export const Colors = {
     text: '#ECEDEE',
     background: '#151718',
     tint: tintColorDark,
+    primary: '#0A84FF',
+    surface: '#1C1C1E',
+    border: '#2C2C2E',
+    mutedText: '#9BA1A6',
+    danger: '#FF453A',
+    selection: 'rgba(10, 132, 255, 0.2)',
+    disabled: '#3A3A3C',
+    chatBubbleSelf: '#235A4A',
+    chatBubbleOther: '#2A2C33',
+    chatBubbleSelfText: '#ECEDEE',
+    avatarStatusOnline: '#34C759',
+    avatarStatusOffline: '#8E8E93',
+    avatarStatusAway: '#FFD60A',
+    avatarStatusBorder: '#151718',
+    avatarPlaceholder: '#636366',
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,

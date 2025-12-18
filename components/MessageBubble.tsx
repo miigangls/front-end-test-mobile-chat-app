@@ -1,22 +1,22 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image, Pressable } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Message } from '@/hooks/useChats';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { formatTimeHHMM } from '@/utils/datetime';
+import { useAppColors } from '@/hooks/useAppColors';
+import { useRouter } from 'expo-router';
 
 interface MessageBubbleProps {
   message: Message;
   isCurrentUser: boolean;
+  onLongPress?: (message: Message) => void;
 }
 
-export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+export function MessageBubble({ message, isCurrentUser, onLongPress }: MessageBubbleProps) {
+  const colors = useAppColors();
+  const router = useRouter();
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const statusText = isCurrentUser ? (message.status === 'read' ? '✓✓' : '✓') : '';
 
   return (
     <View style={[
@@ -26,19 +26,33 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
       <View style={[
         styles.bubble,
         isCurrentUser 
-          ? [styles.selfBubble, { backgroundColor: isDark ? '#235A4A' : '#DCF8C6' }]
-          : [styles.otherBubble, { backgroundColor: isDark ? '#2A2C33' : '#FFFFFF' }]
+          ? [styles.selfBubble, { backgroundColor: colors.chatBubbleSelf }]
+          : [styles.otherBubble, { backgroundColor: colors.chatBubbleOther }]
       ]}>
+        {message.type === 'image' && !message.deletedAt && (
+          <Pressable
+            onPress={() => router.push({ pathname: '/ImageViewer', params: { uri: message.mediaUri ?? '' } })}
+            onLongPress={() => onLongPress?.(message)}
+          >
+            <Image
+              source={{ uri: message.thumbnailUri ?? message.mediaUri ?? '' }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          </Pressable>
+        )}
         <ThemedText style={[
           styles.messageText,
-          isCurrentUser && !isDark && styles.selfMessageText
+          isCurrentUser && { color: colors.chatBubbleSelfText },
         ]}>
           {message.text}
         </ThemedText>
         <View style={styles.timeContainer}>
-          <ThemedText style={styles.timeText}>
-            {formatTime(message.timestamp)}
-          </ThemedText>
+          {isCurrentUser && (message.editedAt && !message.deletedAt) ? (
+            <ThemedText style={styles.timeText}>Edited</ThemedText>
+          ) : null}
+          <ThemedText style={styles.timeText}>{formatTimeHHMM(message.timestamp)}</ThemedText>
+          {isCurrentUser ? <ThemedText style={styles.timeText}>{statusText}</ThemedText> : null}
         </View>
       </View>
     </View>
@@ -74,12 +88,16 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 16,
   },
-  selfMessageText: {
-    color: '#000000',
+  image: {
+    width: 220,
+    height: 160,
+    borderRadius: 12,
+    marginBottom: 6,
   },
   timeContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    gap: 6,
     marginTop: 2,
   },
   timeText: {

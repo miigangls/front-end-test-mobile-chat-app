@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { initializeDatabase } from './db';
 import { seedDatabase } from './seed';
+import { useAppColors } from '@/hooks/useAppColors';
 
 interface DatabaseContextType {
   isInitialized: boolean;
@@ -23,6 +24,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
+  const colors = useAppColors();
 
   useEffect(() => {
     let isMounted = true;
@@ -30,11 +32,9 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
     async function setupDatabase() {
       try {
         console.log('Initializing database...');
-        // Initialize the database schema
         await initializeDatabase();
         console.log('Database initialized');
         
-        // Seed the database with initial data
         await seedDatabase();
         console.log('Database seeded');
         
@@ -61,7 +61,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.text}>Initializing database...</Text>
       </View>
     );

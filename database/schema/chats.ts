@@ -16,4 +16,12 @@ export const messages = sqliteTable("messages", {
   senderId: text("sender_id").notNull(),
   text: text("text").notNull(),
   timestamp: integer("timestamp").notNull(),
+  type: text("type", { enum: ["text", "image"] }).notNull(),
+  mediaUri: text("media_uri"),
+  thumbnailUri: text("thumbnail_uri"),
+  mimeType: text("mime_type"),
+  sizeBytes: integer("size_bytes"),
+  status: text("status", { enum: ["sent", "read"] }).notNull(),
+  editedAt: integer("edited_at"),
+  deletedAt: integer("deleted_at"),
 }); 

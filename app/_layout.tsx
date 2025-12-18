@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, usePathname, useSegments, useRouter } from 'expo-router';
+import { Stack, useSegments, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { AppProvider, useAppContext } from '@/hooks/AppContext';
+import { useAuth } from '@/hooks/auth/AuthContext';
+import { AppProviders } from '@/providers/AppProviders';
 import { DrizzleStudioDevTool } from '@/database/DrizzleStudio';
 
 SplashScreen.preventAutoHideAsync();
@@ -17,24 +18,21 @@ function useProtectedRoute(isLoggedIn: boolean, loading: boolean) {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; // Don't redirect during loading
+    if (loading) return;
     
     const inAuthGroup = segments[0] === 'login';
     
     if (!isLoggedIn && !inAuthGroup) {
-      // Redirect to the login page if not logged in
       router.replace('/login');
     } else if (isLoggedIn && inAuthGroup) {
-      // Redirect to the home page if logged in and trying to access login page
       router.replace('/(tabs)');
     }
-  }, [isLoggedIn, segments, loading]);
+  }, [isLoggedIn, segments, loading, router]);
 }
 
 function RootLayoutNav() {
-  const { isLoggedIn, loading } = useAppContext();
+  const { isLoggedIn, loading } = useAuth();
 
-  // Call the hook unconditionally
   useProtectedRoute(isLoggedIn, loading);
 
   return (
@@ -74,10 +72,10 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AppProvider>
+      <AppProviders>
         <RootLayoutNav />
         <StatusBar style="auto" />
-      </AppProvider>
+      </AppProviders>
     </ThemeProvider>
   );
 }

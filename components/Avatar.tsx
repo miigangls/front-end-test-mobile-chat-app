@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { User } from '@/hooks/useUser';
+import { useAppColors } from '@/hooks/useAppColors';
 
 interface AvatarProps {
   user?: User;
@@ -39,13 +40,14 @@ const getInitials = (name?: string): string => {
 };
 
 export function Avatar({ user, size = 40, showStatus = true }: AvatarProps) {
+  const colors = useAppColors();
   const backgroundColor = getAvatarColor(user?.id || user?.name);
   const initials = getInitials(user?.name);
   
   const statusColors = {
-    online: '#4CAF50',
-    offline: '#9E9E9E',
-    away: '#FFC107',
+    online: colors.avatarStatusOnline,
+    offline: colors.avatarStatusOffline,
+    away: colors.avatarStatusAway,
   };
 
   return (
@@ -74,6 +76,7 @@ export function Avatar({ user, size = 40, showStatus = true }: AvatarProps) {
               borderRadius: size / 8,
               right: 0,
               bottom: 0,
+              borderColor: colors.background,
             },
           ]}
         />
@@ -97,6 +100,5 @@ const styles = StyleSheet.create({
   statusIndicator: {
     position: 'absolute',
     borderWidth: 1.5,
-    borderColor: 'white',
   },
 }); 
