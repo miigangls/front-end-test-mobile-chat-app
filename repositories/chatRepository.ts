@@ -1,59 +1,60 @@
 import { db } from '@/database/db';
 import { chats, chatParticipants, messages } from '@/database/schema';
-import { and, desc, eq, inArray, like, lt, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, like, lt, ne, sql } from 'drizzle-orm';
 import type { Chat, Message } from '@/types/chat';
-
-function groupBy<T, K extends string | number>(items: T[], keyFn: (item: T) => K) {
-  const map = new Map<K, T[]>();
-  for (const item of items) {
-    const key = keyFn(item);
-    const arr = map.get(key);
-    if (arr) arr.push(item);
-    else map.set(key, [item]);
-  }
-  return map;
-}
 
 export const chatRepository = {
   async getChatListForUser(userId: string): Promise<Chat[]> {
-    const participantRows = await db
-      .select()
+    const userChatIds = db
+      .select({ chatId: chatParticipants.chatId })
       .from(chatParticipants)
-      .where(eq(chatParticipants.userId, userId));
+      .where(eq(chatParticipants.userId, userId))
+      .groupBy(chatParticipants.chatId)
+      .as('user_chats');
 
-    const chatIds = participantRows.map((row) => row.chatId);
-    if (chatIds.length === 0) return [];
-
-    await db.select().from(chats).where(inArray(chats.id, chatIds));
-
-    const participantsRows = await db
-      .select()
-      .from(chatParticipants)
-      .where(inArray(chatParticipants.chatId, chatIds));
-
-    const participantsByChatId = groupBy(participantsRows, (r) => r.chatId);
-
-    const allMessagesNewestFirst = await db
-      .select()
+    const latestMessageByChatId = db
+      .select({
+        chatId: messages.chatId,
+        maxTimestamp: sql<number>`max(${messages.timestamp})`.as('maxTimestamp'),
+      })
       .from(messages)
-      .where(inArray(messages.chatId, chatIds))
-      .orderBy(desc(messages.timestamp));
+      .innerJoin(userChatIds, eq(messages.chatId, userChatIds.chatId))
+      .groupBy(messages.chatId)
+      .as('latest_message');
 
-    const lastMessageByChatId = new Map<string, Message>();
-    for (const m of allMessagesNewestFirst) {
-      if (lastMessageByChatId.has(m.chatId)) continue;
-      lastMessageByChatId.set(m.chatId, mapMessageRow(m));
+    const rows = await db
+      .select({
+        chatId: userChatIds.chatId,
+        participantId: chatParticipants.userId,
+        m: messages,
+      })
+      .from(userChatIds)
+      .innerJoin(chatParticipants, eq(chatParticipants.chatId, userChatIds.chatId))
+      .leftJoin(latestMessageByChatId, eq(latestMessageByChatId.chatId, userChatIds.chatId))
+      .leftJoin(
+        messages,
+        and(eq(messages.chatId, userChatIds.chatId), eq(messages.timestamp, latestMessageByChatId.maxTimestamp))
+      )
+      .orderBy(desc(latestMessageByChatId.maxTimestamp));
+
+    if (rows.length === 0) return [];
+
+    const chatMap = new Map<string, { participants: Set<string>; lastMessage?: Message }>();
+
+    for (const row of rows) {
+      const existing = chatMap.get(row.chatId) ?? { participants: new Set<string>() };
+      existing.participants.add(row.participantId);
+      if (!existing.lastMessage && row.m) {
+        existing.lastMessage = mapMessageRow(row.m);
+      }
+      chatMap.set(row.chatId, existing);
     }
 
-    return chatIds.map((chatId) => {
-      const participantIds = (participantsByChatId.get(chatId) ?? []).map((p) => p.userId);
-
-      return {
-        id: chatId,
-        participants: participantIds,
-        lastMessage: lastMessageByChatId.get(chatId),
-      };
-    });
+    return Array.from(chatMap.entries()).map(([chatId, data]) => ({
+      id: chatId,
+      participants: Array.from(data.participants),
+      lastMessage: data.lastMessage,
+    }));
   },
 
   async createChat(currentUserId: string, participantIds: string[]): Promise<Chat | null> {
